@@ -1,12 +1,13 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import RegisterClient from "./Register";
 
-export default async function Home() {
+export default async function RegisterPage() {
   const session = await auth();
 
   if (session?.user) {
     redirect("/dashboard");
   }
 
-  redirect("/login");
+  return <RegisterClient />;
 }
