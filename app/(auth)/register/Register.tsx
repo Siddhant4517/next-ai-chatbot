@@ -36,29 +36,33 @@ export default function RegisterClient() {
     };
 
     startTransition(async () => {
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      try {
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
         },
         body: JSON.stringify(form),
       });
 
       let data;
-
+      
       try {
         data = await res.json();
       } catch {
         setError("Server error (not JSON)");
         return;
       }
-
+      
       if (!res.ok) {
-        setError(data.error);
+        setError(data.error || "Something went wrong");
         return;
       }
-
+      
       router.push("/login");
+    } catch (error) {
+      setError("Network error");
+    }
     });
   };
 
@@ -112,7 +116,7 @@ export default function RegisterClient() {
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
-            {error && <p className="text-red-300 text-sm">{error}</p>}
+            {error && <p className="text-red-300 text-md">{error}</p>}
 
             <button className="w-full py-3 bg-white text-black rounded-lg font-semibold hover:scale-[1.03] transition">
               {isPending ? "Creating..." : "Register"}
