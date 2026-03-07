@@ -38,7 +38,7 @@ export default function LoginClient() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push("/");
     });
   }
 

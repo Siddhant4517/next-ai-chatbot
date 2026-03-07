@@ -6,7 +6,7 @@ import ChatLayout from "@/components/ChatLayout";
 
 export const metadata = { title: "AI Chat" };
 
-export default async function Home() {
+export default async function Chat() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
