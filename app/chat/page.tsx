@@ -1,18 +1,19 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db";
-import { Chat } from "@/models/Chat";
+import { Chat as ChatModel } from "@/models/Chat";
 import ChatLayout from "@/components/ChatLayout";
+import { ROUTES } from "@/lib/constants";
 
-export const metadata = { title: "AI Chat" };
+export const metadata = { title: `Chat` };
 
 export default async function Chat() {
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  if (!session?.user) redirect(ROUTES.LOGIN);
 
   await connectDB();
 
-  const chats = await Chat.find({ userId: session.user?.id })
+  const chats = await ChatModel.find({ userId: session.user?.id })
     .sort({ createdAt: -1 })
     .lean();
 

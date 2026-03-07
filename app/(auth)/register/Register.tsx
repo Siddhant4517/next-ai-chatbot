@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { API, ROUTES } from "@/lib/constants";
 
 export default function RegisterClient() {
   const router = useRouter();
@@ -59,7 +60,7 @@ export default function RegisterClient() {
         return;
       }
       
-      router.push("/login");
+      router.push(ROUTES.LOGIN);
     } catch (error) {
       setError("Network error");
     }
@@ -124,7 +125,7 @@ export default function RegisterClient() {
             <p className="text-sm text-gray-200 mt-4 text-center">
               Already have an account?{" "}
               <a
-                href="/login"
+                href={ROUTES.LOGIN}
                 className="underline hover:text-white transition"
               >
                 Login

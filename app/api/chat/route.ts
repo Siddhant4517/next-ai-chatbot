@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { AI_CONFIG } from "@/lib/constants";
 import { connectDB } from "@/lib/db";
 import { Chat } from "@/models/Chat";
 import { Message } from "@/models/Message";
@@ -31,17 +32,17 @@ export async function POST(req: Request) {
    const chat = await Chat.findById(chatId);
   if (chat?.title === "New Chat") {
     const { text: title } = await generateText({
-      model: google("gemini-3-flash-preview"),
-      prompt: `Generate a short, meaningful chat title (max 5 words, no quotes, no punctuation) for a conversation that starts with: "${userMessage.content}"`,
+      model: google(process.env.GEMINI_MODEL || "gemini-3-flash-preview"),
+      prompt: AI_CONFIG.TITLE_PROMPT(userMessage.content),
     });
 
     await Chat.findByIdAndUpdate(chatId, {
-      title: title.trim().slice(0, 50)  // safety trim
+      title: title.trim().slice(0, 50)
     });
   }
 
   const result = streamText({
-    model: google("gemini-3-flash-preview"),
+    model: google(process.env.GEMINI_MODEL || "gemini-3-flash-preview"),
     messages,
     onFinish: async ({ text }) => {
       await Message.create({

@@ -3,12 +3,13 @@ import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import { Chat } from "@/models/Chat";
 import ChatLayout from "@/components/ChatLayout";
+import { ROUTES } from "@/lib/constants";
 
-export const metadata = { title: "AI Chat" };
+export const metadata = { title: `${process.env.NEXT_PUBLIC_APP_NAME ?? "OrangeAI"} | Home` };
 
 export default async function Home() {
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  if (!session?.user) redirect(ROUTES.LOGIN);
 
   await connectDB();
 

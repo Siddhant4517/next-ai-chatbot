@@ -4,6 +4,9 @@ import { connectDB } from "@/lib/db";
 import { Chat } from "@/models/Chat";
 import { Message } from "@/models/Message";
 import ChatLayout from "@/components/ChatLayout";
+import { ROUTES } from "@/lib/constants";
+
+export const metadata = { title: `Chat` };
 
 interface Props {
   params: Promise<{ chatId: string }>;
@@ -12,7 +15,7 @@ interface Props {
 export default async function ChatPage({ params }: Props) {
   const { chatId } = await params;
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  if (!session?.user) redirect(ROUTES.LOGIN);
 
   await connectDB();
 

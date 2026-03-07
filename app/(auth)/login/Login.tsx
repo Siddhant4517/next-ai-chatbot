@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { ROUTES } from "@/lib/constants";
 
 export default function LoginClient() {
   const router = useRouter();
@@ -98,7 +99,7 @@ export default function LoginClient() {
 
           <p className="text-sm text-gray-200 mt-4 text-center">
             Don’t have an account?{" "}
-            <a href="/register" className="underline">
+            <a href={ROUTES.REGISTER} className="underline">
               Register
             </a>
           </p>
