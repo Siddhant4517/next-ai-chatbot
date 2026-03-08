@@ -16,20 +16,20 @@ export async function POST(req: Request) {
   if (!session) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const { messages,chatId } = await req.json();
+  const { messages, chatId } = await req.json();
 
   const userMessage = messages[messages.length - 1];
 
   await connectDB();
 
-   await Message.create({
+  await Message.create({
     userId: session.user?.id,
     chatId,
     role: "user",
     content: userMessage.content,
   });
 
-   const chat = await Chat.findById(chatId);
+  const chat = await Chat.findById(chatId);
   if (chat?.title === "New Chat") {
     const { text: title } = await generateText({
       model: google(process.env.GEMINI_MODEL || "gemini-3-flash-preview"),
@@ -37,13 +37,26 @@ export async function POST(req: Request) {
     });
 
     await Chat.findByIdAndUpdate(chatId, {
-      title: title.trim().slice(0, 50)
+      title: title.trim().slice(0, 50),
     });
   }
 
+  const history = await Message.find({
+    chatId,
+    userId: session.user?.id,
+  })
+    .sort({ createdAt: 1 })
+    .lean();
+
+  // ✅ Format history for Gemini — only role and content needed
+  const formattedMessages = history.map((m) => ({
+    role: m.role as "user" | "assistant",
+    content: m.content,
+  }));
+
   const result = streamText({
     model: google(process.env.GEMINI_MODEL || "gemini-3-flash-preview"),
-    messages,
+    messages:formattedMessages,
     onFinish: async ({ text }) => {
       await Message.create({
         userId: session.user?.id,
@@ -54,5 +67,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return result.toDataStreamResponse(); 
+  return result.toDataStreamResponse();
 }

@@ -1,7 +1,6 @@
 "use client";
 
-import { PlusIcon, MessageSquare } from "lucide-react";
-import { APP_NAME } from "@/lib/constants";
+import { MessageSquare, PlusIcon, Sparkles } from "lucide-react";
 import LogoutButton from "./Logout";
 
 interface SerializedChat {
@@ -28,14 +27,21 @@ export default function Sidebar({
   onLoadChat,
 }: Props) {
   return (
-    <aside className="w-[20%] min-w-[200px] flex flex-col bg-gray-900 border-r border-gray-800">
+    <aside className="w-[20%] min-w-[220px] flex flex-col bg-surface-900 border-r border-surface-700">
 
       {/* Logo */}
-      <div className="p-4 border-b border-gray-800">
-        <h1 className="text-lg font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
-          {APP_NAME}
-        </h1>
-        <p className="text-xs text-gray-500 mt-0.5 truncate">{user.email}</p>
+      <div className="p-5 border-b border-surface-700">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center shadow-[var(--orange-glow)]">
+            <Sparkles size={14} className="text-white" />
+          </div>
+          <h1 className="font-display text-lg font-800 tracking-tight text-white">
+            {process.env.NEXT_PUBLIC_APP_NAME || "OrangeAI"}
+          </h1>
+        </div>
+        <p className="text-xs text-surface-500 mt-2 truncate font-sans pl-9">
+          {user.email}
+        </p>
       </div>
 
       {/* New Chat Button */}
@@ -43,39 +49,42 @@ export default function Sidebar({
         <button
           onClick={onNewChat}
           disabled={loadingNew}
-          className="w-full flex items-center gap-2 p-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition text-sm font-medium disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-white text-sm font-medium transition-all duration-150 disabled:opacity-40 shadow-[var(--orange-glow)] hover:shadow-[var(--orange-glow-strong)]"
         >
-          <PlusIcon size={16} />
+          <PlusIcon size={15} />
           {loadingNew ? "Creating..." : "New Chat"}
         </button>
       </div>
 
       {/* Chat History */}
-      <div className="flex-1 overflow-y-auto px-2 space-y-1">
-        <p className="text-xs text-gray-500 px-2 py-1 uppercase tracking-wider">
-          History
+      <div className="flex-1 overflow-y-auto px-2 py-1 space-y-0.5">
+        <p className="text-[10px] font-display font-semibold text-surface-500 px-3 py-2 uppercase tracking-widest">
+          Recent
         </p>
         {chats.length === 0 && (
-          <p className="text-xs text-gray-600 px-2">No chats yet</p>
+          <p className="text-xs text-surface-500 px-3 py-2">No chats yet</p>
         )}
         {chats.map((chat) => (
           <button
             key={chat._id}
             onClick={() => onLoadChat(chat._id)}
-            className={`w-full flex items-center gap-2 p-2.5 rounded-lg text-left text-sm transition hover:bg-gray-800 ${
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-sm transition-all duration-150 group ${
               activeChatId === chat._id
-                ? "bg-gray-800 text-white"
-                : "text-gray-400"
+                ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                : "text-surface-400 hover:bg-surface-800 hover:text-white border border-transparent"
             }`}
           >
-            <MessageSquare size={14} className="shrink-0" />
+            <MessageSquare
+              size={13}
+              className={`shrink-0 ${activeChatId === chat._id ? "text-orange-400" : "text-surface-500 group-hover:text-surface-300"}`}
+            />
             <span className="truncate">{chat.title}</span>
           </button>
         ))}
       </div>
 
       {/* Logout */}
-      <div className="p-3 border-t border-gray-800">
+      <div className="p-3 border-t border-surface-700">
         <LogoutButton />
       </div>
     </aside>

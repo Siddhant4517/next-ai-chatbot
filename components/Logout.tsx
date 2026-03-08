@@ -10,62 +10,51 @@ export default function LogoutButton() {
 
   return (
     <>
-      {/* Trigger Button */}
       <button
         onClick={() => setShowModal(true)}
-        className="w-full flex items-center gap-2 p-2.5 rounded-lg text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition"
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-surface-400 hover:bg-surface-800 hover:text-white transition-all duration-150 group"
       >
-        <LogOut size={16} />
-        Logout
+        <LogOut size={14} className="group-hover:text-orange-400 transition-colors" />
+        Sign Out
       </button>
 
-      {/* Modal Overlay */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          
-          {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setShowModal(false)}
           />
-
-          {/* Modal Box */}
-          <div className="relative z-10 bg-gray-900 border border-gray-700 rounded-2xl p-6 w-[320px] shadow-2xl">
-            
-            {/* Close Button */}
+          <div className="relative z-10 bg-surface-900 border border-surface-700 rounded-2xl p-6 w-[340px] shadow-2xl">
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-white transition"
+              className="absolute top-4 right-4 text-surface-500 hover:text-white transition-colors"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
 
-            {/* Icon */}
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-500/10 mb-4">
-              <LogOut size={22} className="text-red-400" />
+            <div className="w-11 h-11 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+              <LogOut size={18} className="text-red-400" />
             </div>
 
-            {/* Text */}
-            <h3 className="text-white font-semibold text-lg mb-1">
-              Logout?
+            <h3 className="font-display text-white font-semibold text-base mb-1">
+              Sign out?
             </h3>
-            <p className="text-gray-400 text-sm mb-6">
-              Are you sure you want to logout? You'll need to sign in again to access your chats.
+            <p className="text-surface-400 text-sm mb-5 leading-relaxed">
+              You'll need to sign in again to access your conversations.
             </p>
 
-            {/* Actions */}
-            <div className="flex gap-3">
+            <div className="flex gap-2.5">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-gray-800 text-sm text-gray-300 hover:bg-gray-700 transition"
+                className="flex-1 py-2.5 rounded-xl bg-surface-800 border border-surface-600 text-sm text-surface-300 hover:bg-surface-700 hover:text-white transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={() => signOut({ callbackUrl: ROUTES.LOGIN })}
-                className="flex-1 py-2.5 rounded-xl bg-red-600 text-sm text-white font-medium hover:bg-red-500 transition"
+                className="flex-1 py-2.5 rounded-xl bg-red-500/90 hover:bg-red-500 text-sm text-white font-medium transition-all"
               >
-                Logout
+                Sign Out
               </button>
             </div>
           </div>
