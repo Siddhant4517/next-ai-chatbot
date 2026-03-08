@@ -6,6 +6,7 @@ import { useChat } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Sidebar from "./Sidebar";
+import { Sparkles } from "lucide-react";
 
 interface SerializedChat {
   _id: string;
@@ -50,25 +51,20 @@ export default function ChatLayout({
     setLoadingNew(true);
     const res = await fetch(API.CHAT_NEW, { method: "POST" });
     const { chatId } = await res.json();
-
     setChats((prev) => [
       { _id: chatId, title: "New Chat", createdAt: new Date().toISOString() },
       ...prev,
     ]);
-
-    // ✅ Navigate to new chat route
-    router.push(`${ROUTES.CHAT_ID(chatId)}`);
+    router.push(ROUTES.CHAT_ID(chatId));
     setLoadingNew(false);
   }
 
   function handleLoadChat(chatId: string) {
-    // ✅ Just navigate — server loads messages
-    router.push(`${ROUTES.CHAT_ID(chatId)}`);
+    router.push(ROUTES.CHAT_ID(chatId));
   }
 
   return (
-    <div className="flex h-screen bg-gray-950 text-white overflow-hidden">
-      {/* SIDEBAR — 20% */}
+    <div className="flex h-screen bg-surface-950 text-white overflow-hidden font-sans">
       <Sidebar
         user={user}
         chats={chats}
@@ -78,22 +74,27 @@ export default function ChatLayout({
         onLoadChat={handleLoadChat}
       />
 
-      {/* CHAT AREA — 80% */}
-      <main className="flex flex-col flex-1">
+      <main className="flex flex-col flex-1 overflow-hidden">
         {!activeChatId ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
-            <div className="text-5xl">🤖</div>
-            <h2 className="text-xl font-semibold text-gray-300">
-              Welcome, {user.name ?? user.email}
-            </h2>
-            <p className="text-gray-500 text-sm">
-              Start a new chat or select a previous one
-            </p>
+          // Empty state
+          <div className="flex-1 flex flex-col items-center justify-center text-center gap-5 p-8">
+            <div className="w-16 h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shadow-[var(--orange-glow)]">
+              <Sparkles size={28} className="text-orange-400" />
+            </div>
+            <div>
+              <h2 className="font-display text-2xl font-bold text-white tracking-tight">
+                Welcome to {process.env.NEXT_PUBLIC_APP_NAME || "OrangeAI"}
+              </h2>
+              <p className="text-surface-400 text-sm mt-1.5 font-sans">
+                Start a new conversation or pick up where you left off
+              </p>
+            </div>
             <button
               onClick={handleNewChat}
-              className="px-5 py-2.5 bg-indigo-600 rounded-xl text-sm font-medium hover:bg-indigo-500 transition"
+              className="flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-400 text-white rounded-xl text-sm font-medium transition-all shadow-[var(--orange-glow)] hover:shadow-[var(--orange-glow-strong)]"
             >
-              + New Chat
+              <Sparkles size={15} />
+              Start New Chat
             </button>
           </div>
         ) : (

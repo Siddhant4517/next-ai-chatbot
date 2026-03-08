@@ -1,5 +1,4 @@
 // App
-export const APP_NAME = "AI-Chat-Bot";
 export const APP_DESCRIPTION = "Smart conversations powered by AI";
 
 // Routes
@@ -16,6 +15,7 @@ export const API = {
   CHAT: "/api/chat",
   CHAT_NEW: "/api/chat/new",
   CHAT_HISTORY: "/api/chat/history",
+  REGISTER: "/api/register",
 } as const;
 
 // AI Config
