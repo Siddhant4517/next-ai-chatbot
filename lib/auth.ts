@@ -3,9 +3,10 @@ import Credentials from "next-auth/providers/credentials";
 import { connectDB } from "./db";
 import { User } from "@/models/User";
 import bcrypt from "bcryptjs";
+import { ROUTES } from "./constants";
 
 const config = {
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt" as const },
 
   providers: [
     Credentials({
@@ -21,14 +22,18 @@ const config = {
           email: credentials?.email,
         });
 
-        if (!user) return null;
+        if (!user) {
+          throw new Error("User does not exist");
+        }
 
         const isValid = await bcrypt.compare(
-          credentials!.password,
-          user.password
+          credentials!.password as string,
+          user.password,
         );
 
-        if (!isValid) return null;
+        if (!isValid) {
+          throw new Error("Invalid Credentials");
+        }
 
         return {
           id: user._id.toString(),
@@ -39,8 +44,19 @@ const config = {
     }),
   ],
 
+    callbacks: {
+    async jwt({ token, user }) {
+      if (user) token.id = user.id;
+      return token;
+    },
+    async session({ session, token }) {
+      session.user.id = token.id as string;
+      return session;
+    },
+  },
+
   pages: {
-    signIn: "/login",
+    signIn: ROUTES.LOGIN,
   },
 };
 
