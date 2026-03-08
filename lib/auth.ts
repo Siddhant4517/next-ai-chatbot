@@ -7,6 +7,7 @@ import { ROUTES } from "./constants";
 
 const config = {
   session: { strategy: "jwt" as const },
+  trustHost: true,
 
   providers: [
     Credentials({
