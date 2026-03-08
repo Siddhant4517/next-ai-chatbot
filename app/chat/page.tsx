@@ -9,7 +9,9 @@ export const metadata = { title: `Chat` };
 
 export default async function Chat() {
   const session = await auth();
-  if (!session?.user) redirect(ROUTES.LOGIN);
+  if (!session?.user || !session.user.id) redirect(ROUTES.LOGIN);
+
+  const user = session.user as { id: string; name?: string | null; email?: string | null };
 
   await connectDB();
 
@@ -24,7 +26,7 @@ export default async function Chat() {
   }));
 
   return (
-    <ChatLayout user={session.user} chats={serializedChats} initialMessages={[]}
+    <ChatLayout user={user} chats={serializedChats} initialMessages={[]}
       activeChatId={null}/>
   );
 }

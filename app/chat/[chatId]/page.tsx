@@ -15,7 +15,9 @@ interface Props {
 export default async function ChatPage({ params }: Props) {
   const { chatId } = await params;
   const session = await auth();
-  if (!session?.user) redirect(ROUTES.LOGIN);
+  if (!session?.user || !session.user.id) redirect(ROUTES.LOGIN);
+
+  const user = session.user as { id: string; name?: string | null; email?: string | null };
 
   await connectDB();
 
@@ -46,7 +48,7 @@ export default async function ChatPage({ params }: Props) {
 
   return (
     <ChatLayout
-      user={session.user}
+      user={user}
       chats={serializedChats}
       initialMessages={serializedMessages}
       activeChatId={chatId}
