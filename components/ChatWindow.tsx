@@ -9,9 +9,10 @@ import { ArrowUp, ImagePlus, X } from "lucide-react";
 interface Props {
   chatHelpers: UseChatHelpers;
   chatId: string;
+    isNewChat?: boolean;
 }
 
-export default function ChatWindow({ chatHelpers, chatId }: Props) {
+export default function ChatWindow({ chatHelpers, chatId,isNewChat=false }: Props) {
   const {
     messages,
     input,
@@ -65,8 +66,8 @@ export default function ChatWindow({ chatHelpers, chatId }: Props) {
     const imgMimeType = imageMimeType;
 
     setInput("");
-    setImagePreview(null); // ✅ clear preview directly
-    setImageBase64(null); // ✅ clear base64 directly
+    setImagePreview(null);
+    setImageBase64(null);
     setImageMimeType("image/jpeg");
     if (fileInputRef.current) fileInputRef.current.value = "";
 
@@ -81,7 +82,7 @@ export default function ChatWindow({ chatHelpers, chatId }: Props) {
       },
       {
         body: {
-          chatId,
+          chatId: isNewChat ? null : chatId,
           imageBase64: imgBase64,
           imageMimeType: imgMimeType,
         },

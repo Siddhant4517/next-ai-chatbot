@@ -7,26 +7,6 @@ import { ROUTES } from "@/lib/constants";
 
 export const metadata = { title: `${process.env.NEXT_PUBLIC_APP_NAME ?? "OrangeAI"} | Home` };
 
-export default async function Home() {
-  const session = await auth();
-  if (!session?.user || !session.user.id) redirect(ROUTES.LOGIN);
-
-  const user= session.user as { id: string; name: string; email: string };
-
-  await connectDB();
-
-  const chats = await Chat.find({ userId: session.user?.id })
-    .sort({ createdAt: -1 })
-    .lean();
-
-  const serializedChats = chats.map((c) => ({
-    _id: c._id.toString(),
-    title: c.title,
-    createdAt: c.createdAt.toISOString(),
-  }));
-
-  return (
-    <ChatLayout user={user} chats={serializedChats} initialMessages={[]}
-      activeChatId={null}/>
-  );
+export default function Home() {
+  redirect("/new");
 }
