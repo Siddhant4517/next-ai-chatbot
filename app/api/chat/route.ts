@@ -16,17 +16,21 @@ export async function POST(req: Request) {
   if (!session) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const { messages, chatId } = await req.json();
+  const { messages, chatId, imageBase64, imageMimeType } = await req.json();
 
-  const userMessage = messages[messages.length - 1];
+  if (!chatId) return new Response("chatId is required", { status: 400 });
 
   await connectDB();
+
+  const userMessage = messages[messages.length - 1];
 
   await Message.create({
     userId: session.user?.id,
     chatId,
     role: "user",
     content: userMessage.content,
+    imageBase64: imageBase64 ?? null,
+    imageMimeType: imageMimeType ?? null,
   });
 
   const chat = await Chat.findById(chatId);
@@ -49,14 +53,37 @@ export async function POST(req: Request) {
     .lean();
 
   // ✅ Format history for Gemini — only role and content needed
-  const formattedMessages = history.map((m) => ({
-    role: m.role as "user" | "assistant",
-    content: m.content,
-  }));
+  const formattedMessages = history.map((m, index) => {
+    const isLast = index === history.length - 1;
+
+    // If this is the last message and image was uploaded
+    if (isLast && imageBase64) {
+      return {
+        role: m.role as "user" | "assistant",
+        content: [
+          {
+            type: "image" as const,
+            image: imageBase64,
+            mimeType: imageMimeType || "image/jpeg",
+          },
+          {
+            type: "text" as const,
+            text: m.content || "What is in this image?",
+          },
+        ],
+      };
+    }
+
+    return {
+      role: m.role as "user" | "assistant",
+      content: m.content,
+    };
+  });
 
   const result = streamText({
     model: google(process.env.GEMINI_MODEL || "gemini-3-flash-preview"),
-    messages:formattedMessages,
+    system: `You are OrangeAI, a helpful assistant. Today's date is ${new Date().toDateString()}.`,
+    messages: formattedMessages,
     onFinish: async ({ text }) => {
       await Message.create({
         userId: session.user?.id,

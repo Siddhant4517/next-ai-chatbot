@@ -6,6 +6,8 @@ const MessageSchema = new mongoose.Schema(
     chatId: { type: String, required: true, index: true },
     role: { type: String, enum: ["user", "assistant"] },
     content: String,
+    imageBase64: { type: String, default: null },
+    imageMimeType: { type: String, default: null },
   },
   { timestamps: true },
 );

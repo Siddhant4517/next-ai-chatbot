@@ -5,7 +5,11 @@ import { signOut } from "next-auth/react";
 import { LogOut, X } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 
-export default function LogoutButton() {
+interface Props {
+  iconOnly?: boolean;
+}
+
+export default function LogoutButton({ iconOnly = false }: Props) {
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -14,8 +18,8 @@ export default function LogoutButton() {
         onClick={() => setShowModal(true)}
         className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-surface-400 hover:bg-surface-800 hover:text-white transition-all duration-150 group"
       >
-        <LogOut size={14} className="group-hover:text-orange-400 transition-colors" />
-        Sign Out
+        <LogOut size={14} className="group-hover:text-orange-400 transition-colors shrink-0" />
+        {!iconOnly && "Sign Out"}
       </button>
 
       {showModal && (

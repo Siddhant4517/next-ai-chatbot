@@ -18,6 +18,8 @@ interface DBMessage {
   _id: string;
   role: "user" | "assistant";
   content: string;
+  imageBase64?: string | null;
+  imageMimeType?: string | null;
 }
 
 interface Props {
@@ -36,6 +38,8 @@ export default function ChatLayout({
   const router = useRouter();
   const [chats, setChats] = useState(initialChats);
   const [loadingNew, setLoadingNew] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false); // ✅ collapse state
+
 
   const chatHelpers = useChat({
     api: API.CHAT,
@@ -44,6 +48,10 @@ export default function ChatLayout({
       id: m._id,
       role: m.role,
       content: m.content,
+      data: {                          // ✅ pass image via data field
+    imageBase64: m.imageBase64,
+    imageMimeType: m.imageMimeType,
+  },
     })),
   });
 
@@ -70,6 +78,8 @@ export default function ChatLayout({
         chats={chats}
         activeChatId={activeChatId}
         loadingNew={loadingNew}
+        isCollapsed={isCollapsed}
+        onToggle={() => setIsCollapsed((prev) => !prev)}
         onNewChat={handleNewChat}
         onLoadChat={handleLoadChat}
       />
