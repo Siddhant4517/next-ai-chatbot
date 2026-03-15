@@ -44,6 +44,8 @@ export default async function ChatPage({ params }: Props) {
     _id: m._id.toString(),
     role: m.role as "user" | "assistant",
     content: m.content,
+    imageBase64: m.imageBase64 ?? null,
+  imageMimeType: m.imageMimeType ?? null,
   }));
 
   return (

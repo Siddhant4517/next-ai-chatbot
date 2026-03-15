@@ -4,7 +4,7 @@ import ChatWindow from "@/components/ChatWindow";
 import { API, ROUTES } from "@/lib/constants";
 import { useChat } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Sidebar from "./Sidebar";
 import { Sparkles } from "lucide-react";
 
@@ -18,13 +18,25 @@ interface DBMessage {
   _id: string;
   role: "user" | "assistant";
   content: string;
+  imageBase64?: string | null;
+  imageMimeType?: string | null;
 }
 
 interface Props {
-  user: { id: string; name?: string | null; email?: string | null };
+  user: {
+    id?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+  id?: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
   chats: SerializedChat[];
   initialMessages: DBMessage[];
   activeChatId: string | null;
+  isNewChat?: boolean;
 }
 
 export default function ChatLayout({
@@ -32,10 +44,13 @@ export default function ChatLayout({
   chats: initialChats,
   initialMessages,
   activeChatId,
+  isNewChat = false,
 }: Props) {
   const router = useRouter();
   const [chats, setChats] = useState(initialChats);
   const [loadingNew, setLoadingNew] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const pendingChatIdRef = useRef<string | null>(null);
 
   const chatHelpers = useChat({
     api: API.CHAT,
@@ -44,19 +59,51 @@ export default function ChatLayout({
       id: m._id,
       role: m.role,
       content: m.content,
+      data: {
+        imageBase64: m.imageBase64 ?? null,
+        imageMimeType: m.imageMimeType ?? null,
+      } as Record<string, string | null>,
     })),
+    onResponse: async (response) => {
+      const newChatId = response.headers.get("x-chat-id");
+      const newTitle = response.headers.get("x-chat-title");
+
+      // ✅ Store in state but DON'T navigate yet
+    if (newChatId && newTitle) {
+      pendingChatIdRef.current = newChatId;  // ✅ set ref, not state
+      // ✅ Update sidebar title immediately
+      setChats((prev) => {
+        const exists = prev.find((c) => c._id === newChatId);
+        if (exists) {
+          return prev.map((c) =>
+            c._id === newChatId
+              ? { ...c, title: decodeURIComponent(newTitle) }
+              : c
+          );
+        }
+        // New chat — add to sidebar
+        return [
+          {
+            _id: newChatId,
+            title: decodeURIComponent(newTitle),
+            createdAt: new Date().toISOString(),
+          },
+          ...prev,
+        ];
+      });
+    }
+  },
+
+  // ✅ Navigate AFTER stream is fully complete
+  onFinish: () => {
+    if (isNewChat && pendingChatIdRef.current) {
+      router.replace(ROUTES.CHAT_ID(pendingChatIdRef.current)); // ✅ navigate to new chat
+    }
+  },
   });
 
-  async function handleNewChat() {
-    setLoadingNew(true);
-    const res = await fetch(API.CHAT_NEW, { method: "POST" });
-    const { chatId } = await res.json();
-    setChats((prev) => [
-      { _id: chatId, title: "New Chat", createdAt: new Date().toISOString() },
-      ...prev,
-    ]);
-    router.push(ROUTES.CHAT_ID(chatId));
-    setLoadingNew(false);
+  function handleNewChat() {
+    router.push(ROUTES.CHAT_NEW);
   }
 
   function handleLoadChat(chatId: string) {
@@ -68,38 +115,20 @@ export default function ChatLayout({
       <Sidebar
         user={user}
         chats={chats}
-        activeChatId={activeChatId}
+        activeChatId={activeChatId ?? pendingChatIdRef.current}
         loadingNew={loadingNew}
+        isCollapsed={isCollapsed}
+        onToggle={() => setIsCollapsed((prev) => !prev)}
         onNewChat={handleNewChat}
         onLoadChat={handleLoadChat}
       />
 
       <main className="flex flex-col flex-1 overflow-hidden">
-        {!activeChatId ? (
-          // Empty state
-          <div className="flex-1 flex flex-col items-center justify-center text-center gap-5 p-8">
-            <div className="w-16 h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shadow-[var(--orange-glow)]">
-              <Sparkles size={28} className="text-orange-400" />
-            </div>
-            <div>
-              <h2 className="font-display text-2xl font-bold text-white tracking-tight">
-                Welcome to {process.env.NEXT_PUBLIC_APP_NAME || "OrangeAI"}
-              </h2>
-              <p className="text-surface-400 text-sm mt-1.5 font-sans">
-                Start a new conversation or pick up where you left off
-              </p>
-            </div>
-            <button
-              onClick={handleNewChat}
-              className="flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-400 text-white rounded-xl text-sm font-medium transition-all shadow-[var(--orange-glow)] hover:shadow-[var(--orange-glow-strong)]"
-            >
-              <Sparkles size={15} />
-              Start New Chat
-            </button>
-          </div>
-        ) : (
-          <ChatWindow chatHelpers={chatHelpers} chatId={activeChatId} />
-        )}
+        <ChatWindow
+          chatHelpers={chatHelpers}
+          chatId={activeChatId ?? "new"}
+          isNewChat={isNewChat}
+        />
       </main>
     </div>
   );
