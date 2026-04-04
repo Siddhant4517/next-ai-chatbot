@@ -6,8 +6,12 @@ import bcrypt from "bcryptjs";
 import { ROUTES } from "./constants";
 
 const config = {
-  session: { strategy: "jwt" as const },
+  session: { strategy: "jwt" as const, maxAge: 30 * 24 * 60 * 60 },
   trustHost: true,
+
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60,
+  },
 
   providers: [
     Credentials({
