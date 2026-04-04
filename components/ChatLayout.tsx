@@ -69,37 +69,37 @@ export default function ChatLayout({
       const newTitle = response.headers.get("x-chat-title");
 
       // ✅ Store in state but DON'T navigate yet
-    if (newChatId && newTitle) {
-      pendingChatIdRef.current = newChatId;  // ✅ set ref, not state
-      // ✅ Update sidebar title immediately
-      setChats((prev) => {
-        const exists = prev.find((c) => c._id === newChatId);
-        if (exists) {
-          return prev.map((c) =>
-            c._id === newChatId
-              ? { ...c, title: decodeURIComponent(newTitle) }
-              : c
-          );
-        }
-        // New chat — add to sidebar
-        return [
-          {
-            _id: newChatId,
-            title: decodeURIComponent(newTitle),
-            createdAt: new Date().toISOString(),
-          },
-          ...prev,
-        ];
-      });
-    }
-  },
+      if (newChatId && newTitle) {
+        pendingChatIdRef.current = newChatId; // ✅ set ref, not state
+        // ✅ Update sidebar title immediately
+        setChats((prev) => {
+          const exists = prev.find((c) => c._id === newChatId);
+          if (exists) {
+            return prev.map((c) =>
+              c._id === newChatId
+                ? { ...c, title: decodeURIComponent(newTitle) }
+                : c,
+            );
+          }
+          // New chat — add to sidebar
+          return [
+            {
+              _id: newChatId,
+              title: decodeURIComponent(newTitle),
+              createdAt: new Date().toISOString(),
+            },
+            ...prev,
+          ];
+        });
+      }
+    },
 
-  // ✅ Navigate AFTER stream is fully complete
-  onFinish: () => {
-    if (isNewChat && pendingChatIdRef.current) {
-      router.replace(ROUTES.CHAT_ID(pendingChatIdRef.current)); // ✅ navigate to new chat
-    }
-  },
+    // ✅ Navigate AFTER stream is fully complete
+    onFinish: () => {
+      if (isNewChat && pendingChatIdRef.current) {
+        router.replace(ROUTES.CHAT_ID(pendingChatIdRef.current)); // ✅ navigate to new chat
+      }
+    },
   });
 
   function handleNewChat() {
@@ -108,6 +108,32 @@ export default function ChatLayout({
 
   function handleLoadChat(chatId: string) {
     router.push(ROUTES.CHAT_ID(chatId));
+  }
+
+  async function handleDelete(chatId: string) {
+    await fetch(`/api/chat/${chatId}`, { method: "DELETE" });
+
+    setChats((prev) => prev.filter((c) => c._id !== chatId));
+
+    // ✅ Navigate away if deleted chat was active
+    if (activeChatId === chatId) {
+      router.push(ROUTES.CHAT_NEW);
+    }
+  }
+
+  async function handleRename(chatId: string, newTitle: string) {
+    const res = await fetch(`/api/chat/${chatId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: newTitle }),
+    });
+
+    const { title } = await res.json();
+
+    // ✅ Update sidebar instantly
+    setChats((prev) =>
+      prev.map((c) => (c._id === chatId ? { ...c, title } : c)),
+    );
   }
 
   return (
@@ -121,6 +147,8 @@ export default function ChatLayout({
         onToggle={() => setIsCollapsed((prev) => !prev)}
         onNewChat={handleNewChat}
         onLoadChat={handleLoadChat}
+        onDelete={handleDelete}
+        onRename={handleRename}
       />
 
       <main className="flex flex-col flex-1 overflow-hidden">
